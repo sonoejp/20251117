@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Plus, Edit, Trash2, Calendar, MapPin, Users } from 'lucide-react';
+import { Edit, Trash2, Calendar, MapPin, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../types';
 import type { EventCategory, Event } from '../types';
@@ -81,11 +81,6 @@ const ListView: React.FC<ListViewProps> = ({ onEditEvent }) => {
               <option value="date">日付順</option>
               <option value="category">カテゴリ順</option>
             </select>
-
-            <button className="px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              <span>予定を追加</span>
-            </button>
           </div>
         </div>
 

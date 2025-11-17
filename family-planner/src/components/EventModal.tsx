@@ -26,11 +26,11 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate, e
     familyMembers: [] as string[],
   });
 
-  // モーダルが開かれたときにフォームを設定
+  // モーダルが開かれたときにフォームをリセットまたは既存データを読み込み
   useEffect(() => {
     if (isOpen) {
       if (editingEvent) {
-        // 編集モード：既存のイベントデータを設定
+        // 編集モード：既存のイベントデータを読み込み
         setFormData({
           title: editingEvent.title,
           category: editingEvent.category,
@@ -39,10 +39,10 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate, e
           allDay: editingEvent.allDay,
           description: editingEvent.description || '',
           location: editingEvent.location || '',
-          familyMembers: editingEvent.familyMembers,
+          familyMembers: editingEvent.familyMembers || [],
         });
       } else {
-        // 新規作成モード：初期値を設定
+        // 新規作成モード：フォームをリセット
         setFormData({
           title: '',
           category: 'school',
@@ -62,29 +62,85 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate, e
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // バリデーション
+    const trimmedTitle = formData.title.trim();
+
+    // 1. タイトルが空白のみの場合
+    if (!trimmedTitle) {
+      alert('タイトルを入力してください');
+      return;
+    }
+
+    // 2. タイトルの長さチェック（最大100文字）
+    if (trimmedTitle.length > 100) {
+      alert('タイトルは100文字以内で入力してください');
+      return;
+    }
+
+    // 3. 説明の長さチェック（最大1000文字）
+    if (formData.description && formData.description.length > 1000) {
+      alert('説明は1000文字以内で入力してください');
+      return;
+    }
+
+    // 4. 場所の長さチェック（最大200文字）
+    if (formData.location && formData.location.length > 200) {
+      alert('場所は200文字以内で入力してください');
+      return;
+    }
+
+    // 5. 日付のバリデーション
+    if (!formData.startDate) {
+      alert('開始日時を入力してください');
+      return;
+    }
+
+    const startDate = new Date(formData.startDate);
+    const endDate = formData.endDate ? new Date(formData.endDate) : null;
+
+    // 6. 無効な日付チェック
+    if (isNaN(startDate.getTime())) {
+      alert('有効な開始日時を入力してください');
+      return;
+    }
+
+    // 7. 終了日時が開始日時より前の場合
+    if (endDate && endDate < startDate) {
+      alert('終了日時は開始日時より後に設定してください');
+      return;
+    }
+
+    // 8. 過度に未来の日付チェック（100年後まで）
+    const hundredYearsLater = new Date();
+    hundredYearsLater.setFullYear(hundredYearsLater.getFullYear() + 100);
+    if (startDate > hundredYearsLater) {
+      alert('開始日時が遠すぎます');
+      return;
+    }
+
     if (editingEvent) {
       // 編集モード：既存のイベントを更新
       updateEvent(editingEvent.id, {
-        title: formData.title,
+        title: trimmedTitle,
         category: formData.category,
-        startDate: new Date(formData.startDate),
-        endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+        startDate: startDate,
+        endDate: endDate || undefined,
         allDay: formData.allDay,
-        description: formData.description,
-        location: formData.location,
+        description: formData.description?.trim() || '',
+        location: formData.location?.trim() || '',
         familyMembers: formData.familyMembers,
       });
     } else {
       // 新規作成モード：新しいイベントを追加
       const newEvent: Event = {
-        id: Date.now().toString(),
-        title: formData.title,
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: trimmedTitle,
         category: formData.category,
-        startDate: new Date(formData.startDate),
-        endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+        startDate: startDate,
+        endDate: endDate || undefined,
         allDay: formData.allDay,
-        description: formData.description,
-        location: formData.location,
+        description: formData.description?.trim() || '',
+        location: formData.location?.trim() || '',
         familyMembers: formData.familyMembers,
       };
       addEvent(newEvent);

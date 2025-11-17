@@ -19,8 +19,8 @@ const AppContent: React.FC = () => {
   };
 
   const handleCloseModal = () => {
-    setShowEventModal(false);
     setEditingEvent(undefined);
+    setShowEventModal(false);
   };
 
   return (
@@ -42,7 +42,7 @@ const AppContent: React.FC = () => {
 
       {/* フローティングアクションボタン */}
       <button
-        onClick={() => setShowEventModal(true)}
+        onClick={() => handleOpenModal()}
         className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-40"
         title="予定を追加"
       >
