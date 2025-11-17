@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../types';
@@ -17,13 +17,29 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
   const [formData, setFormData] = useState({
     title: '',
     category: 'school' as EventCategory,
-    startDate: initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : '',
+    startDate: '',
     endDate: '',
     allDay: false,
     description: '',
     location: '',
     familyMembers: [] as string[],
   });
+
+  // モーダルが開かれたときにフォームをリセット
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        title: '',
+        category: 'school',
+        startDate: initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : '',
+        endDate: '',
+        allDay: false,
+        description: '',
+        location: '',
+        familyMembers: [],
+      });
+    }
+  }, [isOpen, initialDate]);
 
   if (!isOpen) return null;
 
@@ -44,18 +60,6 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
 
     addEvent(newEvent);
     onClose();
-
-    // フォームをリセット
-    setFormData({
-      title: '',
-      category: 'school',
-      startDate: '',
-      endDate: '',
-      allDay: false,
-      description: '',
-      location: '',
-      familyMembers: [],
-    });
   };
 
   const handleMemberToggle = (memberId: string) => {
@@ -67,8 +71,17 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
     }));
   };
 
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-6 border-b">

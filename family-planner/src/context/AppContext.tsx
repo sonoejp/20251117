@@ -22,6 +22,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // LocalStorageからデータを読み込み
   useEffect(() => {
@@ -47,20 +48,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ];
       setFamilyMembers(defaultMembers);
     }
+
+    // 初期化完了
+    setIsInitialized(true);
   }, []);
 
   // データが変更されたらLocalStorageに保存
+  // 初回読み込み時は保存しないようにフラグを使用
   useEffect(() => {
-    if (events.length > 0) {
+    if (isInitialized) {
       localStorage.setItem('family-planner-events', JSON.stringify(events));
     }
-  }, [events]);
+  }, [events, isInitialized]);
 
   useEffect(() => {
-    if (familyMembers.length > 0) {
+    if (isInitialized) {
       localStorage.setItem('family-planner-members', JSON.stringify(familyMembers));
     }
-  }, [familyMembers]);
+  }, [familyMembers, isInitialized]);
 
   const addEvent = (event: Event) => {
     setEvents((prev) => [...prev, event]);
