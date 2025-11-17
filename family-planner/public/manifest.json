@@ -1,0 +1,35 @@
+{
+  "name": "Family Planner - 育児計画管理アプリ",
+  "short_name": "Family Planner",
+  "description": "育児中の病院、学校、習い事などを管理する計画特化アプリ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f15f45",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "予定を追加",
+      "short_name": "追加",
+      "description": "新しい予定を追加",
+      "url": "/?action=add",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
