@@ -4,16 +4,30 @@ import { ja } from 'date-fns/locale';
 import { Plus, Edit, Trash2, Calendar, MapPin, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../types';
-import type { EventCategory } from '../types';
+import type { EventCategory, Event } from '../types';
 
-const ListView: React.FC = () => {
-  const { events, familyMembers } = useApp();
+interface ListViewProps {
+  onEditEvent: (event: Event) => void;
+}
+
+const ListView: React.FC<ListViewProps> = ({ onEditEvent }) => {
+  const { events, familyMembers, deleteEvent } = useApp();
   const [filterCategory, setFilterCategory] = useState<EventCategory | 'all'>('all');
+  const [filterMember, setFilterMember] = useState<string | 'all'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'category'>('date');
 
   // フィルタリングとソート
   const filteredEvents = events
-    .filter((event) => filterCategory === 'all' || event.category === filterCategory)
+    .filter((event) => {
+      const categoryMatch = filterCategory === 'all' || event.category === filterCategory;
+      const memberMatch = filterMember === 'all' || event.familyMembers.includes(filterMember);
+      const searchMatch = searchQuery === '' ||
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location?.toLowerCase().includes(searchQuery.toLowerCase());
+      return categoryMatch && memberMatch && searchMatch;
+    })
     .sort((a, b) => {
       if (sortBy === 'date') {
         return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
@@ -44,6 +58,20 @@ const ListView: React.FC = () => {
               ))}
             </select>
 
+            {/* メンバーフィルター */}
+            <select
+              value={filterMember}
+              onChange={(e) => setFilterMember(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="all">すべてのメンバー</option>
+              {familyMembers.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))}
+            </select>
+
             {/* ソート */}
             <select
               value={sortBy}
@@ -59,6 +87,17 @@ const ListView: React.FC = () => {
               <span>予定を追加</span>
             </button>
           </div>
+        </div>
+
+        {/* 検索バー */}
+        <div className="mt-4">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="タイトル、説明、場所で検索..."
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
         </div>
 
         {/* 統計 */}
@@ -168,10 +207,22 @@ const ListView: React.FC = () => {
 
                       {/* アクション */}
                       <div className="flex gap-2 ml-4">
-                        <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                        <button
+                          onClick={() => onEditEvent(event)}
+                          className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                          title="編集"
+                        >
                           <Edit className="w-4 h-4 text-gray-600" />
                         </button>
-                        <button className="p-2 rounded-lg hover:bg-red-50 transition-colors">
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`「${event.title}」を削除しますか？`)) {
+                              deleteEvent(event.id);
+                            }
+                          }}
+                          className="p-2 rounded-lg hover:bg-red-50 transition-colors"
+                          title="削除"
+                        >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </button>
                       </div>

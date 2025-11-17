@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, List, BarChart3 } from 'lucide-react';
+import { Calendar, List, BarChart3, PieChart } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { ViewMode } from '../types';
 
@@ -10,6 +10,7 @@ const Header: React.FC = () => {
     { mode: 'calendar', icon: <Calendar className="w-5 h-5" />, label: 'カレンダー' },
     { mode: 'gantt', icon: <BarChart3 className="w-5 h-5" />, label: 'ガントチャート' },
     { mode: 'list', icon: <List className="w-5 h-5" />, label: 'リスト' },
+    { mode: 'dashboard', icon: <PieChart className="w-5 h-5" />, label: '統計' },
   ];
 
   return (

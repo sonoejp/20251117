@@ -9,10 +9,11 @@ interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialDate?: Date;
+  editingEvent?: Event;
 }
 
-const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate }) => {
-  const { addEvent, familyMembers } = useApp();
+const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate, editingEvent }) => {
+  const { addEvent, updateEvent, familyMembers } = useApp();
 
   const [formData, setFormData] = useState({
     title: '',
@@ -25,40 +26,70 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
     familyMembers: [] as string[],
   });
 
-  // モーダルが開かれたときにフォームをリセット
+  // モーダルが開かれたときにフォームを設定
   useEffect(() => {
     if (isOpen) {
-      setFormData({
-        title: '',
-        category: 'school',
-        startDate: initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : '',
-        endDate: '',
-        allDay: false,
-        description: '',
-        location: '',
-        familyMembers: [],
-      });
+      if (editingEvent) {
+        // 編集モード：既存のイベントデータを設定
+        setFormData({
+          title: editingEvent.title,
+          category: editingEvent.category,
+          startDate: format(editingEvent.startDate, "yyyy-MM-dd'T'HH:mm"),
+          endDate: editingEvent.endDate ? format(editingEvent.endDate, "yyyy-MM-dd'T'HH:mm") : '',
+          allDay: editingEvent.allDay,
+          description: editingEvent.description || '',
+          location: editingEvent.location || '',
+          familyMembers: editingEvent.familyMembers,
+        });
+      } else {
+        // 新規作成モード：初期値を設定
+        setFormData({
+          title: '',
+          category: 'school',
+          startDate: initialDate ? format(initialDate, "yyyy-MM-dd'T'HH:mm") : '',
+          endDate: '',
+          allDay: false,
+          description: '',
+          location: '',
+          familyMembers: [],
+        });
+      }
     }
-  }, [isOpen, initialDate]);
+  }, [isOpen, initialDate, editingEvent]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newEvent: Event = {
-      id: Date.now().toString(),
-      title: formData.title,
-      category: formData.category,
-      startDate: new Date(formData.startDate),
-      endDate: formData.endDate ? new Date(formData.endDate) : undefined,
-      allDay: formData.allDay,
-      description: formData.description,
-      location: formData.location,
-      familyMembers: formData.familyMembers,
-    };
+    if (editingEvent) {
+      // 編集モード：既存のイベントを更新
+      updateEvent(editingEvent.id, {
+        title: formData.title,
+        category: formData.category,
+        startDate: new Date(formData.startDate),
+        endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+        allDay: formData.allDay,
+        description: formData.description,
+        location: formData.location,
+        familyMembers: formData.familyMembers,
+      });
+    } else {
+      // 新規作成モード：新しいイベントを追加
+      const newEvent: Event = {
+        id: Date.now().toString(),
+        title: formData.title,
+        category: formData.category,
+        startDate: new Date(formData.startDate),
+        endDate: formData.endDate ? new Date(formData.endDate) : undefined,
+        allDay: formData.allDay,
+        description: formData.description,
+        location: formData.location,
+        familyMembers: formData.familyMembers,
+      };
+      addEvent(newEvent);
+    }
 
-    addEvent(newEvent);
     onClose();
   };
 
@@ -85,7 +116,9 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* ヘッダー */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">予定を追加</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {editingEvent ? '予定を編集' : '予定を追加'}
+          </h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
@@ -244,7 +277,7 @@ const EventModal: React.FC<EventModalProps> = ({ isOpen, onClose, initialDate })
               type="submit"
               className="flex-1 px-4 py-2 rounded-lg bg-primary-500 text-white hover:bg-primary-600 transition-colors"
             >
-              追加
+              {editingEvent ? '更新' : '追加'}
             </button>
           </div>
         </form>

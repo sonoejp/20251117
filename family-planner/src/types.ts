@@ -97,4 +97,4 @@ export const CATEGORIES: CategoryConfig[] = [
   }
 ];
 
-export type ViewMode = 'calendar' | 'gantt' | 'list';
+export type ViewMode = 'calendar' | 'gantt' | 'list' | 'dashboard';

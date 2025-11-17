@@ -4,8 +4,13 @@ import { ja } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CATEGORIES } from '../types';
+import type { Event } from '../types';
 
-const CalendarView: React.FC = () => {
+interface CalendarViewProps {
+  onEditEvent: (event: Event) => void;
+}
+
+const CalendarView: React.FC<CalendarViewProps> = ({ onEditEvent }) => {
   const { events, selectedDate, setSelectedDate } = useApp();
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -115,7 +120,11 @@ const CalendarView: React.FC = () => {
                     return (
                       <div
                         key={event.id}
-                        className="text-xs px-1 py-0.5 rounded truncate"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditEvent(event);
+                        }}
+                        className="text-xs px-1 py-0.5 rounded truncate cursor-pointer hover:opacity-80 transition-opacity"
                         style={{ backgroundColor: category?.color + '40' }}
                         title={event.title}
                       >

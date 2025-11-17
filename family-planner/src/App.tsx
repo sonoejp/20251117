@@ -4,25 +4,40 @@ import Header from './components/Header';
 import CalendarView from './components/CalendarView';
 import GanttView from './components/GanttView';
 import ListView from './components/ListView';
+import DashboardView from './components/DashboardView';
 import EventModal from './components/EventModal';
+import type { Event } from './types';
 
 const AppContent: React.FC = () => {
   const { viewMode } = useApp();
   const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | undefined>(undefined);
+
+  const handleOpenModal = (event?: Event) => {
+    setEditingEvent(event);
+    setShowEventModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEventModal(false);
+    setEditingEvent(undefined);
+  };
 
   return (
     <div className="min-h-screen">
       <Header />
 
       <main>
-        {viewMode === 'calendar' && <CalendarView />}
+        {viewMode === 'calendar' && <CalendarView onEditEvent={handleOpenModal} />}
         {viewMode === 'gantt' && <GanttView />}
-        {viewMode === 'list' && <ListView />}
+        {viewMode === 'list' && <ListView onEditEvent={handleOpenModal} />}
+        {viewMode === 'dashboard' && <DashboardView />}
       </main>
 
       <EventModal
         isOpen={showEventModal}
-        onClose={() => setShowEventModal(false)}
+        onClose={handleCloseModal}
+        editingEvent={editingEvent}
       />
 
       {/* フローティングアクションボタン */}
