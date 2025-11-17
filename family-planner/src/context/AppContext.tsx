@@ -26,27 +26,40 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // LocalStorageからデータを読み込み
   useEffect(() => {
-    const savedEvents = localStorage.getItem('family-planner-events');
-    const savedMembers = localStorage.getItem('family-planner-members');
+    try {
+      const savedEvents = localStorage.getItem('family-planner-events');
+      const savedMembers = localStorage.getItem('family-planner-members');
 
-    if (savedEvents) {
-      const parsedEvents = JSON.parse(savedEvents).map((e: any) => ({
-        ...e,
-        startDate: new Date(e.startDate),
-        endDate: e.endDate ? new Date(e.endDate) : undefined,
-      }));
-      setEvents(parsedEvents);
-    }
+      if (savedEvents) {
+        const parsedEvents = JSON.parse(savedEvents).map((e: any) => ({
+          ...e,
+          startDate: new Date(e.startDate),
+          endDate: e.endDate ? new Date(e.endDate) : undefined,
+        }));
+        setEvents(parsedEvents);
+      }
 
-    if (savedMembers) {
-      setFamilyMembers(JSON.parse(savedMembers));
-    } else {
-      // デフォルトのメンバーを設定
+      if (savedMembers) {
+        setFamilyMembers(JSON.parse(savedMembers));
+      } else {
+        // デフォルトのメンバーを設定
+        const defaultMembers: FamilyMember[] = [
+          { id: '1', name: '自分', relation: 'parent' },
+          { id: '2', name: '子供', relation: 'child' }
+        ];
+        setFamilyMembers(defaultMembers);
+      }
+    } catch (error) {
+      console.error('Failed to load data from localStorage:', error);
+      // エラーが発生した場合はデフォルトのメンバーを設定
       const defaultMembers: FamilyMember[] = [
         { id: '1', name: '自分', relation: 'parent' },
         { id: '2', name: '子供', relation: 'child' }
       ];
       setFamilyMembers(defaultMembers);
+      // LocalStorageをクリア
+      localStorage.removeItem('family-planner-events');
+      localStorage.removeItem('family-planner-members');
     }
 
     // 初期化完了
@@ -57,13 +70,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   // 初回読み込み時は保存しないようにフラグを使用
   useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem('family-planner-events', JSON.stringify(events));
+      try {
+        localStorage.setItem('family-planner-events', JSON.stringify(events));
+      } catch (error) {
+        console.error('Failed to save events to localStorage:', error);
+        // QuotaExceededErrorなどの場合、古いデータを削除するなどの対応が可能
+      }
     }
   }, [events, isInitialized]);
 
   useEffect(() => {
     if (isInitialized) {
-      localStorage.setItem('family-planner-members', JSON.stringify(familyMembers));
+      try {
+        localStorage.setItem('family-planner-members', JSON.stringify(familyMembers));
+      } catch (error) {
+        console.error('Failed to save members to localStorage:', error);
+      }
     }
   }, [familyMembers, isInitialized]);
 
